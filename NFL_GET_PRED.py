@@ -247,18 +247,10 @@ def get_next_next_plays(top_plays, all_data_play_by_plays):
 
 def get_most_common_play_type(next_plays):
     play_type_weights = Counter()
-    
-    # Accumulate weights for each play type
     for play, score in next_plays:
-        play_type_weights[play['type']] += score
+        play_type_weights[play['type']] += score  # Use score as weight
     
-    # Extract play types and their corresponding weights
-    play_types = list(play_type_weights.keys())
-    weights = [score**2.25 for score in play_type_weights.values()]  # Apply a non-linear transformation to weights
-    
-    # Select a play type based on the weights
-    most_common_play_type = random.choices(play_types, weights=weights, k=1)[0]
-    
+    most_common_play_type = play_type_weights.most_common(1)[0][0]
     return most_common_play_type
 
 def analyze_next_plays(next_plays, most_common_play_type):
@@ -287,9 +279,9 @@ def analyze_next_plays(next_plays, most_common_play_type):
 
     average_stat_yardage = stat_yardage_weighted_sum / total_score
     average_scoring_play = scoring_play_weighted_sum / total_score
-    start_team_end_team_different_higher_than_50_percent = start_team_end_team_different_count_weighted_sum / total_score > 0.5
+    start_team_end_team_different_higher_than_75_percent = start_team_end_team_different_count_weighted_sum / total_score > 0.75
 
-    return average_stat_yardage, average_scoring_play, start_team_end_team_different_higher_than_50_percent
+    return average_stat_yardage, average_scoring_play, start_team_end_team_different_higher_than_75_percent
 
 def analyze_clock(next_plays, next_next_plays, most_common_play_type):
     total_time_lost_weighted_sum = 0
@@ -647,7 +639,7 @@ play_thresholds = {
 play_weights = {
     'type': 65, 'awayScore': 1.5, 'homeScore': 1.5, 'period': 1.5, 'clock': 1.5, 'scoringPlay': 50,
     'start_down': 15.5, 'start_distance': 15.5, 'start_yardLine': 0, 'start_yardsToEndzone': 10,
-    'end_down': 60, 'end_distance': 50, 'end_yardLine': 0, 'end_yardsToEndzone': 58, 'statYardage': 0,
+    'end_down': 60, 'end_distance': 50, 'end_yardLine': 0, 'end_yardsToEndzone': 62.5, 'statYardage': 0,
     'start_team': 7.5, 'end_team': 7.5
 }
 
@@ -883,7 +875,7 @@ for game_id in games_with_false_pred['game_id']:
         most_common_play_type = get_most_common_play_type(next_plays)
 
         # for all the next plays that are of the most common play type, calculate the average yards gained/lost, if its a scoring play, and if possesion changed
-        average_stat_yardage, average_scoring_play, start_team_end_team_different_higher_than_50_percent = analyze_next_plays(next_plays, most_common_play_type)
+        average_stat_yardage, average_scoring_play, start_team_end_team_different_higher_than_75_percent = analyze_next_plays(next_plays, most_common_play_type)
         
         # for all the next plays that are of the most common play type, calculate how long they took
         avg_clock_diff = analyze_clock(next_plays, next_next_plays, most_common_play_type)
@@ -904,7 +896,7 @@ for game_id in games_with_false_pred['game_id']:
         best_players = select_best_match_players(most_common_positions, game_prediction_players, game_prediction_teams, previousPlay['end_team'], player_counter, position_averages, all_data_dates)
         
         # using all the information from above, create the next play
-        newPlay = new_previous_play(previousPlay, most_common_play_type, best_players, start_team_end_team_different_higher_than_50_percent, game_prediction_teams, avg_score_diff, avg_clock_diff, average_scoring_play, average_stat_yardage, kickoff)
+        newPlay = new_previous_play(previousPlay, most_common_play_type, best_players, start_team_end_team_different_higher_than_75_percent, game_prediction_teams, avg_score_diff, avg_clock_diff, average_scoring_play, average_stat_yardage, kickoff)
         
         # save the newest play, and run the loop again, now with the new play being the old play
         df_all_plays = pd.DataFrame(all_plays)

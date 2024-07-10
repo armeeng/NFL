@@ -97,8 +97,7 @@ connection_str = f"mysql+pymysql://{db_username}:{db_password}@{db_host}:{db_por
 # Create SQLAlchemy Engine
 engine = create_engine(connection_str)
 
-# Query to select rows from the Games table that the neural network has not seen,
-# the game is finished, and it does not have inputs
+# get the games that are finished but their pbp is not in the database yet
 query = """
 SELECT * FROM Games
 WHERE game_finished = TRUE

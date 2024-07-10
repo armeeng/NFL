@@ -31,15 +31,14 @@ connection_str = f"mysql+pymysql://{db_username}:{db_password}@{db_host}:{db_por
 # Create SQLAlchemy Engine
 engine = create_engine(connection_str)
 
-# Query to select rows from the Games table that the neural network has not seen,
-# the game is finished, and it does not have inputs
+# get all the games with no inputs
 query = """
 SELECT * FROM Games
 WHERE has_inputs = FALSE
 """
 
 # Load data into a DataFrame
-notSeen_finished_noInputs = pd.read_sql(query, con=engine)
+noInputs = pd.read_sql(query, con=engine)
 
 # Function to get teams info
 def get_teams_info(game_id):
@@ -194,7 +193,7 @@ def get_weather(game_id, year, month, day, zip_code):
         return None
 
 # Iterate over the rows in the DataFrame
-for index, row in notSeen_finished_noInputs.iterrows():
+for index, row in noInputs.iterrows():
     game_id = row['game_id']
     print(game_id)
     

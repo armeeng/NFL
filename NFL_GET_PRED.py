@@ -25,6 +25,17 @@ connection_str = f"mysql+pymysql://{db_username}:{db_password}@{db_host}:{db_por
 engine = create_engine(connection_str)
 
 def get_data_for_game_id(game_id, table_name):
+    """
+    Retrieves data for a specific game ID from a database table.
+
+    Parameters:
+    - game_id: The ID of the game to retrieve data for.
+    - table_name: The name of the database table to query.
+
+    Returns:
+    A pandas DataFrame containing the data for the specified game ID from the provided table.
+    """
+    
     query = f"""
     SELECT * FROM {table_name}
     WHERE game_id = '{game_id}'
@@ -32,12 +43,33 @@ def get_data_for_game_id(game_id, table_name):
     return pd.read_sql(query, con=engine)
 
 def get_all_data(table_name):
+    """
+    Retrieves all data from a specified database table.
+
+    Parameters:
+    - table_name: The name of the database table to retrieve data from.
+
+    Returns:
+    A pandas DataFrame containing all the data from the specified table.
+    """
     query = f"""
     SELECT * FROM {table_name}
     """
     return pd.read_sql(query, con=engine)
 
 def calculate_weather_score(current_weather, historical_weather, weather_weights, weather_thresholds):
+    """
+    Calculates the weather score based on the current and historical weather data.
+
+    Parameters:
+    - current_weather: dictionary containing the current weather data
+    - historical_weather: dictionary containing the historical weather data
+    - weather_weights: dictionary containing the weights for different weather parameters
+    - weather_thresholds: dictionary containing the thresholds for each weather parameter
+
+    Returns:
+    - score: the calculated weather score based on the provided data
+    """
     score = 0
     for key, threshold in weather_thresholds.items():
         if abs(current_weather[key] - historical_weather[key]) <= threshold:
@@ -45,6 +77,18 @@ def calculate_weather_score(current_weather, historical_weather, weather_weights
     return score
 
 def calculate_play_score(play, previous_play, play_weights, play_thresholds):
+    """
+    Calculates the play score based on the input play data, previous play data, play weights, and play thresholds.
+
+    Parameters:
+    - play: dictionary containing the data of the current play
+    - previous_play: dictionary containing the data of the previous play
+    - play_weights: dictionary containing the weights for different play parameters
+    - play_thresholds: dictionary containing the thresholds for each play parameter
+
+    Returns:
+    - score: the calculated play score based on the provided data
+    """
     score = 0
     for key, threshold in play_thresholds.items():
         if key == 'type':
@@ -55,6 +99,18 @@ def calculate_play_score(play, previous_play, play_weights, play_thresholds):
     return score
 
 def calculate_games_score(current_game, historical_game, games_weights, games_thresholds):
+    """
+    Calculates the game score based on the current game data, historical game data, game weights, and game thresholds.
+
+    Parameters:
+    - current_game: dictionary containing the data of the current game
+    - historical_game: dictionary containing the data of the historical game
+    - games_weights: dictionary containing the weights for different game parameters
+    - games_thresholds: dictionary containing the thresholds for each game parameter
+
+    Returns:
+    - score: the calculated game score based on the provided data
+    """
     score = 0
     for key, threshold in games_thresholds.items():
         if abs(current_game[key] - historical_game[key]) <= threshold:
@@ -63,6 +119,18 @@ def calculate_games_score(current_game, historical_game, games_weights, games_th
     return score
 
 def calculate_date_score(current_datetime, historical_datetime, date_weights, date_thresholds):
+    """
+    Calculate the score based on the date similarity between the current datetime and historical datetime.
+    
+    Parameters:
+    - current_datetime: The current datetime to compare.
+    - historical_datetime: The historical datetime to compare.
+    - date_weights: A dictionary with weights for different date components.
+    - date_thresholds: A dictionary with thresholds for different date comparisons.
+    
+    Returns:
+    - score: The calculated score based on date similarity.
+    """
     score = 0
     
     # Extract time components for the one-hour check
@@ -87,6 +155,18 @@ def calculate_date_score(current_datetime, historical_datetime, date_weights, da
     return score
 
 def calculate_teams_score(current_team, historical_team, team_weights, team_thresholds):
+    """
+    Calculate the score based on the similarity between the current team and historical team.
+
+    Parameters:
+    - current_team (dict): A dictionary containing the current team's information, including 'home_id' and 'away_id'.
+    - historical_team (dict): A dictionary containing the historical team's information, including 'home_id' and 'away_id'.
+    - team_weights (dict): A dictionary containing the weights for different team parameters.
+    - team_thresholds (dict): A dictionary containing the thresholds for each team parameter.
+
+    Returns:
+    - score (int): The calculated score based on the similarity between the current team and historical team.
+    """
     score = 0
 
     current_home_id = current_team['home_id']
@@ -106,6 +186,18 @@ def calculate_teams_score(current_team, historical_team, team_weights, team_thre
     return score
 
 def calculate_venues_score(current_venue, historical_venue, venue_weights, venue_thresholds):
+    """
+    A function that calculates the venue score based on the current and historical venue data.
+
+    Parameters:
+    - current_venue: dictionary containing the current venue data
+    - historical_venue: dictionary containing the historical venue data
+    - venue_weights: dictionary containing the weights for different venue parameters
+    - venue_thresholds: dictionary containing the thresholds for each venue parameter
+
+    Returns:
+    - score: the calculated venue score based on the provided data
+    """
     score = 0
     for key, threshold in venue_thresholds.items():
         if current_venue[key] == historical_venue[key]:
@@ -114,6 +206,18 @@ def calculate_venues_score(current_venue, historical_venue, venue_weights, venue
     return score 
 
 def score_games_by_weather(current_weather, all_data_weather, weather_weights, weather_thresholds):
+    """
+    Calculates the scores for games based on weather conditions by comparing the current weather with historical weather data.
+
+    Parameters:
+    - current_weather: dictionary containing the current weather data
+    - all_data_weather: DataFrame containing historical weather data
+    - weather_weights: dictionary containing weights for weather parameters
+    - weather_thresholds: dictionary containing thresholds for weather parameters
+
+    Returns:
+    - weather_scores: a dictionary mapping game IDs to the calculated scores based on weather comparison
+    """
     weather_scores = {}
     for index, historical_weather in all_data_weather.iterrows():
         game_id = historical_weather['game_id']
@@ -123,6 +227,18 @@ def score_games_by_weather(current_weather, all_data_weather, weather_weights, w
     return weather_scores
 
 def score_plays(previous_play, all_data_play_by_plays, play_weights, play_thresholds):
+    """
+    Calculates the scores of plays based on the provided previous play, all historical plays, play weights, and play thresholds.
+
+    Parameters:
+    - previous_play: The previous play information used as a reference for calculating scores.
+    - all_data_play_by_plays: A DataFrame containing all historical plays data.
+    - play_weights: The weights used in the calculation of play scores.
+    - play_thresholds: The thresholds applied in determining the play scores.
+
+    Returns:
+    A dictionary containing the scores of each play based on the provided inputs.
+    """
     play_scores = {}
     #i = 0
     for index, play in all_data_play_by_plays.iterrows():
@@ -134,6 +250,18 @@ def score_plays(previous_play, all_data_play_by_plays, play_weights, play_thresh
     return play_scores
 
 def score_games_by_date(current_date, all_data_dates, date_weights, date_thresholds):
+    """
+    Calculate the scores for games based on the dates and historical data.
+
+    Parameters:
+    - current_date: dictionary containing the current date information.
+    - all_data_dates: DataFrame with historical date information.
+    - date_weights: dictionary with weights for different date components.
+    - date_thresholds: dictionary with thresholds for different date comparisons.
+
+    Returns:
+    - date_scores: dictionary containing the calculated scores for each game based on dates.
+    """
     date_scores = {}
     current_datetime = datetime(current_date['year'], current_date['month'], current_date['day'], current_date['hour'], current_date['minute'])
     
@@ -149,6 +277,18 @@ def score_games_by_date(current_date, all_data_dates, date_weights, date_thresho
     return date_scores
 
 def score_games_by_games(current_game, all_data_games, games_weights, games_thresholds):
+    """
+    Calculate the scores for games based on the games data and historical games data.
+
+    Parameters:
+    - current_game: dictionary containing the data of the current game
+    - all_data_games: DataFrame with historical games data
+    - games_weights: dictionary containing weights for different game parameters
+    - games_thresholds: dictionary containing thresholds for each game parameter
+
+    Returns:
+    - games_scores: dictionary containing the calculated scores for each game based on the games data
+    """
     games_scores = {}
     for index, hisoritcal_game in all_data_games.iterrows():
         game_id = hisoritcal_game['game_id']
@@ -158,6 +298,18 @@ def score_games_by_games(current_game, all_data_games, games_weights, games_thre
     return games_scores
 
 def score_games_by_teams(current_teams, all_data_teams, teams_weights, teams_thresholds):
+    """
+    Calculates the scores for games based on teams by comparing the current teams with historical team data.
+
+    Parameters:
+    - current_teams: the current team data 
+    - all_data_teams: DataFrame containing historical team data
+    - teams_weights: dictionary containing weights for team parameters
+    - teams_thresholds: dictionary containing thresholds for team parameters
+
+    Returns:
+    - teams_scores: a dictionary mapping game IDs to the calculated scores based on team comparison
+    """
     teams_scores = {}
 
     for index, historical_teams in all_data_teams.iterrows():
@@ -168,6 +320,19 @@ def score_games_by_teams(current_teams, all_data_teams, teams_weights, teams_thr
     return teams_scores
 
 def score_games_by_venues(current_venue, all_data_venues, venue_weights, venue_thresholds):
+    """
+    Calculate the score for each game in `all_data_venues` based on the similarity of the current venue with the historical venue.
+
+    Parameters:
+        current_venue (dict): A dictionary representing the current venue.
+        all_data_venues (pandas.DataFrame): A DataFrame containing historical venue data.
+        venue_weights (dict): A dictionary containing the weights for each venue parameter.
+        venue_thresholds (dict): A dictionary containing the thresholds for each venue parameter.
+
+    Returns:
+        dict: A dictionary where the keys are the game IDs and the values are the scores.
+
+    """
     venue_score = {}
     for index, historical_venue in all_data_venues.iterrows():
         game_id = historical_venue['game_id']
@@ -177,12 +342,33 @@ def score_games_by_venues(current_venue, all_data_venues, venue_weights, venue_t
     return venue_score
 
 def combine_scores(game_id, score_dicts, category_weights):
+    """
+    Calculates the combined score for a specific game based on the provided score dictionaries and category weights.
+
+    Parameters:
+    - game_id: The ID of the game for which the score is being calculated
+    - score_dicts: A dictionary containing scores for different categories
+    - category_weights: A dictionary containing weights for different categories
+
+    Returns:
+    - combined_score: The total combined score for the specified game
+    """
     combined_score = 0
     for category, scores in score_dicts.items():
         combined_score += scores.get(game_id, 0) * category_weights.get(category, 1)
     return combined_score
 
 def get_combined_scores(score_dicts, category_weights):
+    """
+    Calculates the combined scores for different games based on the given score dictionaries and category weights.
+
+    Parameters:
+    - score_dicts: A dictionary containing scores for different categories
+    - category_weights: A dictionary containing weights for different categories
+
+    Returns:
+    - combined_scores: A dictionary mapping game IDs to their calculated combined scores
+    """
     combined_scores = {}
     all_game_ids = set()
     for scores in score_dicts.values():
@@ -194,28 +380,66 @@ def get_combined_scores(score_dicts, category_weights):
     return combined_scores
 
 def assign_game_scores_to_plays(play_scores, combined_scores):
+    """
+    Assigns game scores to plays based on provided play_scores and combined_scores.
+
+    Parameters:
+    - play_scores: Dictionary containing play scores.
+    - combined_scores: Dictionary containing combined scores for games.
+
+    Returns:
+    Updated play_scores dictionary after adding game scores to each play.
+    """
     for index, (game_id, play_score) in play_scores.items():
         game_score = combined_scores.get(game_id, 0)
         play_scores[index] = (game_id, play_score + game_score)  # Add game score to each play
     return play_scores
 
 def get_top_plays(play_scores, num_plays):
+    """
+    Given a dictionary of play scores and a number of plays to return, this function returns the top `num_plays` plays
+    from the dictionary. The plays are sorted in descending order of their score. The function filters out any plays
+    that are not followed by two consecutive plays of the same game_id.
+
+    Parameters:
+        play_scores (dict): A dictionary where the keys are the indices of the plays and the values are tuples of
+        (play_type, play_score).
+        num_plays (int): The number of top plays to return.
+
+    Returns:
+        list: A list of tuples, where each tuple contains the index of a play and its corresponding (play_type, play_score)
+        tuple. The list is sorted in descending order of play_score.
+
+    """
     sorted_plays = sorted(play_scores.items(), key=lambda x: x[1][1], reverse=True)
     filtered_plays = []
 
-    for i in range(len(sorted_plays)):
-        current_play = sorted_plays[i]
-        if i + 2 < len(sorted_plays):
-            next_play_1 = sorted_plays[i + 1]
-            next_play_2 = sorted_plays[i + 2]
-            if current_play[1][0] == next_play_1[1][0] == next_play_2[1][0]:
-                filtered_plays.append(current_play)
+    for play in sorted_plays:
+        current_index = play[0]
+        
+        if current_index + 2 < len(play_scores):
+            next_play_1 = play_scores[current_index + 1]
+            next_play_2 = play_scores[current_index + 2]
+            
+            if play[1][0] == next_play_1[0] == next_play_2[0]:
+                filtered_plays.append(play)
+                
                 if len(filtered_plays) == num_plays:
                     break
 
     return filtered_plays[:num_plays]
 
 def get_current_plays(top_plays, all_data_play_by_plays):
+    """
+    Given a list of top plays and a DataFrame of all play-by-play data, this function retrieves the current plays by checking if the index of the play exists in the DataFrame index. It returns a list of the current plays.
+
+    Parameters:
+        top_plays (list): A list of top plays.
+        all_data_play_by_plays (DataFrame): DataFrame containing all play-by-play data.
+
+    Returns:
+        list: A list of current plays retrieved from the DataFrame based on the indices provided.
+    """
     current_plays = []
     for index, _ in top_plays:
         if index in all_data_play_by_plays.index:
@@ -224,28 +448,59 @@ def get_current_plays(top_plays, all_data_play_by_plays):
     return current_plays
 
 def get_next_plays(top_plays, all_data_play_by_plays):
+    """
+    Given a list of top plays and a DataFrame of all play-by-play data, this function retrieves the next plays by checking if the index of the play plus one exists in the DataFrame index. It returns a list of tuples, where each tuple contains the next play and its corresponding score from the top plays. If the next play's game ID is different from the previous play's game ID, it prints a message and waits for user input.
+
+    Parameters:
+        top_plays (list): A list of tuples, where each tuple contains the index of a play and its corresponding score.
+        all_data_play_by_plays (pandas.DataFrame): A DataFrame containing all play-by-play data.
+
+    Returns:
+        list: A list of tuples, where each tuple contains the next play and its corresponding score from the top plays.
+    """
     next_plays = []
     for index, score in top_plays:
         if index + 1 in all_data_play_by_plays.index:
             next_play = all_data_play_by_plays.loc[index + 1]
             if all_data_play_by_plays.loc[index, 'game_id'] != next_play['game_id']:
+                # this should never happen
                 print("next game id")
                 input("wait")
             next_plays.append((next_play, score[1]))
     return next_plays
 
 def get_next_next_plays(top_plays, all_data_play_by_plays):
+    """
+    Given a list of top plays and a DataFrame of all play-by-play data, this function retrieves the next two plays by checking if the index of the play plus two exists in the DataFrame index. It returns a list of DataFrame rows, where each row contains the next two plays. If the next two plays' game IDs are different from the previous play's game ID, it prints a message and waits for user input.
+
+    Parameters:
+        top_plays (list): A list of tuples, where each tuple contains the index of a play and its corresponding score.
+        all_data_play_by_plays (pandas.DataFrame): A DataFrame containing all play-by-play data.
+
+    Returns:
+        list: A list of DataFrame rows, where each row contains the next two plays.
+    """
     next_plays = []
     for index, _ in top_plays:
         if index + 2 in all_data_play_by_plays.index:
             next_play = all_data_play_by_plays.loc[index + 2]
             if all_data_play_by_plays.loc[index, 'game_id'] != next_play['game_id']:
+                # this should never happen
                 print("next next game id")
                 input("wait")
             next_plays.append(next_play)
     return next_plays
 
 def get_most_common_play_type(next_plays):
+    """
+    Calculates the most common play type in a list of next plays.
+
+    Parameters:
+    - next_plays (list): A list of tuples containing play dictionaries and scores.
+
+    Returns:
+    - str: The most common play type.
+    """
     play_type_weights = Counter()
     for play, score in next_plays:
         play_type_weights[play['type']] += score  # Use score as weight
@@ -254,6 +509,16 @@ def get_most_common_play_type(next_plays):
     return most_common_play_type
 
 def analyze_next_plays(next_plays, most_common_play_type):
+    """
+    Analyzes the next plays and calculates the average stat yardage, average scoring play, and whether the start team and end team are different.
+
+    Parameters:
+        next_plays (list of tuples): A list of tuples containing the play and score.
+        most_common_play_type (str): The most common play type.
+
+    Returns:
+        tuple: A tuple containing the average stat yardage, average scoring play, and a boolean indicating whether the start team and end team are different.
+    """
     total_score = 0
     stat_yardage_weighted_sum = 0
     scoring_play_weighted_sum = 0
@@ -279,11 +544,22 @@ def analyze_next_plays(next_plays, most_common_play_type):
 
     average_stat_yardage = stat_yardage_weighted_sum / total_score
     average_scoring_play = scoring_play_weighted_sum / total_score
-    start_team_end_team_different_higher_than_75_percent = start_team_end_team_different_count_weighted_sum / total_score > 0.75
+    start_team_end_team_different_higher_than_80_percent = start_team_end_team_different_count_weighted_sum / total_score > 0.8
 
-    return average_stat_yardage, average_scoring_play, start_team_end_team_different_higher_than_75_percent
+    return average_stat_yardage, average_scoring_play, start_team_end_team_different_higher_than_80_percent
 
 def analyze_clock(next_plays, next_next_plays, most_common_play_type):
+    """
+    Analyzes the clock time lost between plays, weighted by the play score.
+
+    Parameters:
+        next_plays (list of tuples): A list of tuples containing the play and score.
+        next_next_plays (list of tuples): A list of tuples containing the next play and score.
+        most_common_play_type (str): The most common play type.
+
+    Returns:
+        float: The average time lost between plays weighted by the play score.
+    """
     total_time_lost_weighted_sum = 0
     total_score = 0
 
@@ -311,6 +587,17 @@ def analyze_clock(next_plays, next_next_plays, most_common_play_type):
     return average_time_lost_weighted
 
 def analyze_score(current_plays, next_plays, most_common_play_type):
+    """
+    Analyzes the score difference between current and next plays, weighted by the play score.
+
+    Parameters:
+        current_plays (list): A list of current plays.
+        next_plays (list of tuples): A list of tuples containing the next play and score.
+        most_common_play_type (str): The most common play type.
+
+    Returns:
+        float: The average score difference weighted by the play score. Returns 0 if there are no plays to compare.
+    """
     total_score_difference_weighted_sum = 0
     total_score = 0
 
@@ -331,6 +618,17 @@ def analyze_score(current_plays, next_plays, most_common_play_type):
     return average_score_difference_weighted
 
 def get_position_combinations(next_plays, all_data_players, most_common_play_type):
+    """
+    Calculates the position combinations based on the most common play type.
+
+    Parameters:
+    - next_plays (list of tuples): A list of tuples containing play dictionaries and scores.
+    - all_data_players (DataFrame): A DataFrame containing player data.
+    - most_common_play_type (str): The most common play type.
+
+    Returns:
+    - list: A list of tuples containing position combinations and scores.
+    """
     position_combinations = []
     for play, score in next_plays:
         if play['type'] == most_common_play_type:
@@ -344,12 +642,31 @@ def get_position_combinations(next_plays, all_data_players, most_common_play_typ
     return position_combinations
 
 def get_most_common_position_combination(position_combinations):
+    """
+    Calculates the most common position combination in a list of positions and scores.
+
+    Parameters:
+    - position_combinations (list): A list of tuples containing position combinations and scores.
+
+    Returns:
+    - tuple: The most common position combination.
+    """
     position_counter = Counter()
     for positions, score in position_combinations:
         position_counter[positions] += score
     return position_counter.most_common(1)[0][0]  # Get the most common position combination
 
 def calculate_average_player_attributes(players_data, game_dates):
+    """
+    Calculates the average weight, height, and age of players based on their data and game dates.
+
+    Parameters:
+    - players_data (DataFrame): A DataFrame containing player data including weight, height, age, score, college_id, etc.
+    - game_dates (DataFrame): A DataFrame containing game dates associated with each player's game.
+
+    Returns:
+    - Tuple: A tuple containing the average weight, average height, average age, and a dictionary of college scores.
+    """
     # Merge game_dates to get the game date for each player
     players_data = players_data.merge(game_dates, on='game_id', how='left')
     
@@ -387,6 +704,26 @@ def calculate_average_player_attributes(players_data, game_dates):
     return average_weight, average_height, average_age, college_score
 
 def get_player_id_occurrences(next_plays, most_common_positions, all_data_players, all_data_dates, most_common_play_type):
+    """
+    Calculates the occurrences of player IDs and their positions in the next plays, and returns the average player attributes for each position.
+
+    Parameters:
+    - next_plays (list of tuples): A list of tuples containing the next plays and their corresponding scores.
+    - most_common_positions (list): A list of the most common positions in the next plays.
+    - all_data_players (pandas.DataFrame): A DataFrame containing player data.
+    - all_data_dates (pandas.DataFrame): A DataFrame containing game dates.
+    - most_common_play_type (str): The most common play type in the next plays.
+
+    Returns:
+    - position_averages (dict): A dictionary containing the average player attributes for each position.
+    - player_counter (defaultdict): A defaultdict containing the count of player IDs and their corresponding scores.
+
+    The function iterates over the next plays and checks if the play type matches the most common play type. If it does, it splits the play text into player IDs and retrieves their positions from the all_data_players DataFrame. If the positions match the most common positions, it increments the player counter and appends the player ID and score to the position_player_data dictionary.
+
+    After processing all the next plays, the function calculates the average player attributes for each position by creating a DataFrame of player data and calling the calculate_average_player_attributes function. The average player attributes are stored in the position_averages dictionary.
+
+    Finally, the function returns the position_averages dictionary and the player_counter defaultdict.
+    """
     player_counter = defaultdict(int)
     position_player_data = defaultdict(list)
     
@@ -426,6 +763,21 @@ def get_player_id_occurrences(next_plays, most_common_positions, all_data_player
     return position_averages, player_counter
 
 def select_best_match_players(most_common_positions, game_prediction_players, game_prediction_teams, team, player_counter, position_averages, all_data_dates):
+    """
+    Selects the best match players based on the most common positions, game prediction players, game prediction teams, team, player counter, position averages, and all data dates.
+
+    Parameters:
+    - most_common_positions (list): A list of the most common positions.
+    - game_prediction_players (DataFrame): A DataFrame containing game prediction players.
+    - game_prediction_teams (DataFrame): A DataFrame containing game prediction teams.
+    - team (int): The team ID.
+    - player_counter (dict): A dictionary containing player counters.
+    - position_averages (dict): A dictionary containing position averages.
+    - all_data_dates (DataFrame): A DataFrame containing all data dates.
+
+    Returns:
+    - list: A list of the best player IDs.
+    """
     home_id = game_prediction_teams['home_id'].iloc[0]
     away_id = game_prediction_teams['away_id'].iloc[0]
     
@@ -485,7 +837,25 @@ def select_best_match_players(most_common_positions, game_prediction_players, ga
     
     return best_players
 
-def new_previous_play(previousPlay, most_common_play_type, best_players, start_team_end_team_different_higher_than_50_percent, game_prediction_teams, avg_score_diff, avg_clock_diff, average_scoring_play, average_stat_yardage, kickoff):
+def new_previous_play(previousPlay, most_common_play_type, best_players, start_team_end_team_different_higher_than_50_percent, game_prediction_teams, avg_score_diff, avg_clock_diff, average_scoring_play, average_stat_yardage, kickoff): 
+        """
+        Updates the previous play based on various game conditions and predictions.
+
+        Parameters:
+        - previousPlay (dict): The dictionary containing information about the previous play.
+        - most_common_play_type (str): The most common play type.
+        - best_players (str): The best players for the play.
+        - start_team_end_team_different_higher_than_50_percent (bool): Indicates if the start and end teams are different by more than 50%.
+        - game_prediction_teams (DataFrame): A DataFrame containing team prediction data.
+        - avg_score_diff (float): The average score difference.
+        - avg_clock_diff (int): The average clock difference.
+        - average_scoring_play (int): The average scoring play.
+        - average_stat_yardage (int): The average stat yardage.
+        - kickoff (dict): Information about the kickoff.
+
+        Returns:
+        - None
+        """
         lastPlayScoring = previousPlay['scoringPlay']
         addedScore = False
 
@@ -525,7 +895,20 @@ def new_previous_play(previousPlay, most_common_play_type, best_players, start_t
 
             previousPlay['type'] = most_common_play_type
             previousPlay['text'] = best_players
+            if previousPlay['type'] == 'Pass Incompletion':
+                # this is needed because espns play by play gives stat yardage for incompletions
+                # (on accident???) sometimes
+                average_stat_yardage = 0
+            
             previousPlay['statYardage'] = average_stat_yardage
+
+            if previousPlay['type'] == 'Field Goal Good':
+                average_scoring_play = 1
+                avg_score_diff = 3
+
+            if previousPlay['type'] == 'Field Goal Missed':
+                average_scoring_play = 0
+                avg_score_diff = 0
 
             if end_team == game_prediction_teams['away_id'].iloc[0]:
                 if avg_score_diff > 0 and avg_score_diff <= 7.1 and average_scoring_play > 0.0001:
@@ -548,7 +931,10 @@ def new_previous_play(previousPlay, most_common_play_type, best_players, start_t
                 else:
                     previousPlay['clock'] = previousPlay['clock'] + avg_clock_diff
 
-            previousPlay['scoringPlay'] = average_scoring_play
+            if addedScore:
+                previousPlay['scoringPlay'] = average_scoring_play
+            else:
+                previousPlay['scoringPlay'] = 0
 
             previousPlay['start_down'] = previousPlay['end_down']
             previousPlay['start_distance'] = previousPlay['end_distance']
@@ -563,16 +949,22 @@ def new_previous_play(previousPlay, most_common_play_type, best_players, start_t
                 #assuming that change of possesion on average results in this
                 previousPlay['end_down'] = 1
                 previousPlay['end_distance'] = 10
-                previousPlay['end_yardsToEndzone'] = 70
+                if previousPlay['type'] == 'Field Goal Missed':
+                    previousPlay['end_yardsToEndzone'] = 100 - (previousPlay['end_yardsToEndzone'])
+                else:
+                    previousPlay['end_yardsToEndzone'] = 70
 
             else:
 
                 if (previousPlay['end_distance'] - average_stat_yardage) < 0:
                     previousPlay['end_down'] = 1
-                    previousPlay['end_distance'] = 10
                     previousPlay['end_yardsToEndzone'] = previousPlay['end_yardsToEndzone'] - average_stat_yardage
+                    if previousPlay['end_yardsToEndzone'] < 10:
+                        previousPlay['end_distance'] = previousPlay['end_yardsToEndzone']
+                    else:
+                        previousPlay['end_distance'] = 10
                 else:
-                    if previousPlay['end_down'] == 4:
+                    if (previousPlay['end_down'] == 4 and addedScore == False):
                         # turn over on downs
                         previousPlay['end_down'] = 1
                         previousPlay['end_distance'] = 10
@@ -586,7 +978,7 @@ def new_previous_play(previousPlay, most_common_play_type, best_players, start_t
                             previousPlay['end_distance'] = previousPlay['end_distance'] - average_stat_yardage
                             previousPlay['end_yardsToEndzone'] = previousPlay['end_yardsToEndzone'] - average_stat_yardage
 
-            if (previousPlay['end_yardsToEndzone'] < 0 or previousPlay['scoringPlay'] > 0.75):
+            if (previousPlay['end_yardsToEndzone'] <= 0 or previousPlay['scoringPlay'] > 0.75):
                 #touchdown
                 previousPlay['scoringPlay'] = 1
                 previousPlay['statYardage'] = previousPlay['start_yardsToEndzone']
@@ -606,12 +998,12 @@ def new_previous_play(previousPlay, most_common_play_type, best_players, start_t
             previousPlay['start_team'] = start_team
             previousPlay['end_team'] =  end_team
 
-        if previousPlay['type'] == 'Penalty':
-            previousPlay['end_down'] = previousPlay['start_down']
-            previousPlay['end_distance'] = previousPlay['start_distance'] - average_stat_yardage
-            previousPlay['scoringPlay'] = lastPlayScoring
-            previousPlay['end_team'] = previousPlay['start_team']
-            previousPlay['end_yardsToEndzone'] = previousPlay['start_yardsToEndzone']
+            if previousPlay['type'] == 'Penalty':
+                previousPlay['end_down'] = previousPlay['start_down']
+                previousPlay['end_distance'] = previousPlay['start_distance'] - average_stat_yardage
+                previousPlay['scoringPlay'] = lastPlayScoring
+                previousPlay['end_team'] = previousPlay['start_team']
+                previousPlay['end_yardsToEndzone'] = previousPlay['start_yardsToEndzone']
 
 weather_thresholds = {
     'temp_max': 5, 'temp_min': 5, 'temp': 5, 'feels_like_max': 5, 'feels_like_min': 5, 'feels_like': 5,
@@ -637,10 +1029,10 @@ play_thresholds = {
 }
 
 play_weights = {
-    'type': 65, 'awayScore': 1.5, 'homeScore': 1.5, 'period': 1.5, 'clock': 1.5, 'scoringPlay': 50,
-    'start_down': 15.5, 'start_distance': 15.5, 'start_yardLine': 0, 'start_yardsToEndzone': 10,
-    'end_down': 60, 'end_distance': 50, 'end_yardLine': 0, 'end_yardsToEndzone': 62.5, 'statYardage': 0,
-    'start_team': 7.5, 'end_team': 7.5
+    'type': 57.5, 'awayScore': 5, 'homeScore': 5, 'period': 12.5, 'clock': 12.5, 'scoringPlay': 49.5,
+    'start_down': 12, 'start_distance': 12, 'start_yardLine': 0, 'start_yardsToEndzone': 14.5,
+    'end_down': 50.5, 'end_distance': 45.5, 'end_yardLine': 0, 'end_yardsToEndzone': 59.25, 'statYardage': 3,
+    'start_team': 13, 'end_team': 13
 }
 
 date_thresholds = {
@@ -650,9 +1042,9 @@ date_thresholds = {
 }
 
 date_weights = {
-    'one_hour': 3,
-    'eight_months': 40,
-    'same_weekday': 5
+    'one_hour': 2,
+    'eight_months': 38.5,
+    'same_weekday': 2
 }
 
 game_thresholds = {
@@ -673,10 +1065,10 @@ team_thresholds = {
 }
 
 team_weights = {
-    'home_id': 10,
-    'home_id_is_away': 3.5,
-    'away_id': 10,
-    'away_id_is_home': 3.5,
+    'home_id': 15,
+    'home_id_is_away': 5,
+    'away_id': 15,
+    'away_id_is_home': 5,
 }
 
 venue_thresholds = {
@@ -686,7 +1078,7 @@ venue_thresholds = {
 }
 
 venue_weights = {
-    'venue_id': 20,
+    'venue_id': 25,
     'grass': 7.5,
     'indoor': 10
 }
@@ -706,11 +1098,11 @@ player_weights = {
 }
 
 category_weights = {
-    'weather': 0.15,
+    'weather': 0.5,
     'dates': 1,
-    'games': 0.15,
-    'teams': 0.6,
-    'venues': 0.35
+    'games': 0.2,
+    'teams': 0.65,
+    'venues': 0.5
 }
 
 # Load all historical data
@@ -859,7 +1251,7 @@ for game_id in games_with_false_pred['game_id']:
         play_scores_with_game_scores = assign_game_scores_to_plays(play_scores, combined_scores)
 
         # get the index top n most similar plays
-        n = 10
+        n = 5
         top_plays = get_top_plays(play_scores_with_game_scores, n)
 
         # get the acutal top n most similar plays
@@ -875,8 +1267,8 @@ for game_id in games_with_false_pred['game_id']:
         most_common_play_type = get_most_common_play_type(next_plays)
 
         # for all the next plays that are of the most common play type, calculate the average yards gained/lost, if its a scoring play, and if possesion changed
-        average_stat_yardage, average_scoring_play, start_team_end_team_different_higher_than_75_percent = analyze_next_plays(next_plays, most_common_play_type)
-        
+        average_stat_yardage, average_scoring_play, start_team_end_team_different_higher_than_50_percent = analyze_next_plays(next_plays, most_common_play_type)
+
         # for all the next plays that are of the most common play type, calculate how long they took
         avg_clock_diff = analyze_clock(next_plays, next_next_plays, most_common_play_type)
 
@@ -894,9 +1286,9 @@ for game_id in games_with_false_pred['game_id']:
         
         # determine the most likely players to be involved in the next play. Each position is assigned a player, based on player_counter and position_averages
         best_players = select_best_match_players(most_common_positions, game_prediction_players, game_prediction_teams, previousPlay['end_team'], player_counter, position_averages, all_data_dates)
-        
+
         # using all the information from above, create the next play
-        newPlay = new_previous_play(previousPlay, most_common_play_type, best_players, start_team_end_team_different_higher_than_75_percent, game_prediction_teams, avg_score_diff, avg_clock_diff, average_scoring_play, average_stat_yardage, kickoff)
+        newPlay = new_previous_play(previousPlay, most_common_play_type, best_players, start_team_end_team_different_higher_than_50_percent, game_prediction_teams, avg_score_diff, avg_clock_diff, average_scoring_play, average_stat_yardage, kickoff)
         
         # save the newest play, and run the loop again, now with the new play being the old play
         df_all_plays = pd.DataFrame(all_plays)
@@ -907,6 +1299,7 @@ for game_id in games_with_false_pred['game_id']:
     all_plays.append(previousPlay.copy())
     df_all_plays = pd.DataFrame(all_plays)
     df_all_plays.to_csv('all_plays.csv', index=False)
+    input("wait")
     
     # update sql table
     with engine.connect() as connection:
@@ -942,3 +1335,6 @@ for game_id in games_with_false_pred['game_id']:
     end_time = time.time()
     duration = end_time - start_time
     print(f"Time taken for the loop: {duration} seconds")
+
+
+# 1 to 30 check pass incompletion 19 yard gain

@@ -893,6 +893,12 @@ def new_previous_play(previousPlay, most_common_play_type, best_players, start_t
             start_team = previousPlay['end_team']
             end_team = start_team
 
+            if start_team_end_team_different_higher_than_50_percent:
+                if start_team == game_prediction_teams['home_id'].iloc[0]:
+                    end_team = game_prediction_teams['away_id'].iloc[0]
+                else:
+                    end_team = game_prediction_teams['home_id'].iloc[0]
+
             previousPlay['type'] = most_common_play_type
             previousPlay['text'] = best_players
             if previousPlay['type'] == 'Pass Incompletion':
@@ -941,10 +947,6 @@ def new_previous_play(previousPlay, most_common_play_type, best_players, start_t
             previousPlay['start_yardsToEndzone'] = previousPlay['end_yardsToEndzone']
 
             if start_team_end_team_different_higher_than_50_percent:
-                if start_team == game_prediction_teams['home_id'].iloc[0]:
-                    end_team = game_prediction_teams['away_id'].iloc[0]
-                else:
-                    end_team = game_prediction_teams['home_id'].iloc[0]
 
                 #assuming that change of possesion on average results in this
                 previousPlay['end_down'] = 1
@@ -1029,10 +1031,10 @@ play_thresholds = {
 }
 
 play_weights = {
-    'type': 57.5, 'awayScore': 5, 'homeScore': 5, 'period': 12.5, 'clock': 12.5, 'scoringPlay': 49.5,
-    'start_down': 12, 'start_distance': 12, 'start_yardLine': 0, 'start_yardsToEndzone': 14.5,
-    'end_down': 50.5, 'end_distance': 45.5, 'end_yardLine': 0, 'end_yardsToEndzone': 59.25, 'statYardage': 3,
-    'start_team': 13, 'end_team': 13
+    'type': 56, 'awayScore': 6, 'homeScore': 4, 'period': 13, 'clock': 11, 'scoringPlay': 50,
+    'start_down': 11, 'start_distance': 11, 'start_yardLine': 1, 'start_yardsToEndzone': 15,
+    'end_down': 51, 'end_distance': 44, 'end_yardLine': 1, 'end_yardsToEndzone': 60, 'statYardage': 3.0,
+    'start_team': 11, 'end_team': 11
 }
 
 date_thresholds = {
@@ -1336,5 +1338,3 @@ for game_id in games_with_false_pred['game_id']:
     duration = end_time - start_time
     print(f"Time taken for the loop: {duration} seconds")
 
-
-# 1 to 30 check pass incompletion 19 yard gain

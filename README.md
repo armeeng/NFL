@@ -16,7 +16,7 @@ This project leverages historical NFL game data to predict future game plays. It
 
 ### NFL_GET_INPUTS: Collecting Detailed Game Inputs
 
-- **Purpose**: Collects detailed game inputs such as team rosters, game dates, and weather information, and stores them in the database.
+- **Purpose**: Collects detailed game inputs such as team rosters, game dates, venue, field type, weather information, and stores them in the database.
 
 ### NFL_GET_PBP: Collecting Play-by-Play Data
 
